@@ -1,0 +1,20 @@
+{{define "index.html"}}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+</head>
+
+<body>
+    {{template "content" .}}
+</body>
+
+</html>
+{{end}}
+
+{{define "content"}}
+<h1>htmx Example</h1>
+<button hx-get="/api/hello">Say Hello</button>
+<div id="hello"></div>
+{{end}}
