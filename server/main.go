@@ -1,6 +1,15 @@
 package main
 
 import (
+	"context"
+	"log"
+	"reflect"
+
+	contractcanvas "github.com/KrishnaCD93/contractcanvas-v2"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"html/template"
 	"io"
 	"net/http"
@@ -23,8 +32,47 @@ func newTemplate() *Templates {
 	}
 }
 
-type Count struct {
-	Count int
+func runDBTest() error {
+	ctx := context.Background()
+
+	conn, err := pgx.Connect(ctx, "user=postgres password=postgres dbname=postgres sslmode=verify-full")
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
+
+	queries := contractcanvas.New(conn)
+
+	// get all developers
+	developers, err := queries.GetDevelopers(ctx)
+	if err != nil {
+		return err
+	}
+
+	// insert a developer
+	insertDeveloper, err := queries.CreateDeveloper(ctx, contractcanvas.CreateDeveloperParams{
+		Username:  "Krishna",
+		Firstname: "Krishna",
+		Lastname:  "Duvvuri",
+		Role:      "Software Engineer",
+		Email:     "krishna.c.duvvuri",
+		Bio: pgtype.Text{
+			String: "I am a software engineer and I want to build cool things!",
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	// get a developer
+	developer, err := queries.GetDeveloper(ctx, insertDeveloper.ID)
+	if err != nil {
+		return err
+	}
+
+	log.Println(reflect.DeepEqual(developer, insertDeveloper))
+
+	log.Println(developers)
 }
 
 func main() {

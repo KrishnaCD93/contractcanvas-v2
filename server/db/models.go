@@ -13,6 +13,8 @@ type Client struct {
 	Username  pgtype.Text
 	Firstname pgtype.Text
 	Lastname  pgtype.Text
+	Email     pgtype.Text
+	Bio       pgtype.Text
 	CreatedAt pgtype.Timestamp
 }
 
@@ -31,6 +33,8 @@ type Developer struct {
 	Firstname pgtype.Text
 	Lastname  pgtype.Text
 	Role      pgtype.Text
+	Email     pgtype.Text
+	Bio       pgtype.Text
 	CreatedAt pgtype.Timestamp
 }
 

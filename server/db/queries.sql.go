@@ -140,7 +140,7 @@ INSERT INTO clients
     (username, firstname, lastname)
 VALUES
     ($1, $2, $3)
-RETURNING id, username, firstname, lastname, created_at
+RETURNING id, username, firstname, lastname, email, bio, created_at
 `
 
 type CreateClientParams struct {
@@ -157,6 +157,8 @@ func (q *Queries) CreateClient(ctx context.Context, arg CreateClientParams) (Cli
 		&i.Username,
 		&i.Firstname,
 		&i.Lastname,
+		&i.Email,
+		&i.Bio,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -201,7 +203,7 @@ INSERT INTO developers
     (username, firstname, lastname, role)
 VALUES
     ($1, $2, $3, $4)
-RETURNING id, username, firstname, lastname, role, created_at
+RETURNING id, username, firstname, lastname, role, email, bio, created_at
 `
 
 type CreateDeveloperParams struct {
@@ -225,6 +227,8 @@ func (q *Queries) CreateDeveloper(ctx context.Context, arg CreateDeveloperParams
 		&i.Firstname,
 		&i.Lastname,
 		&i.Role,
+		&i.Email,
+		&i.Bio,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -472,7 +476,7 @@ func (q *Queries) EarnedValue(ctx context.Context, projectID pgtype.Int4) ([]Ear
 }
 
 const getClient = `-- name: GetClient :one
-SELECT id, username, firstname, lastname, created_at
+SELECT id, username, firstname, lastname, email, bio, created_at
 FROM clients
 WHERE id = $1
 `
@@ -485,13 +489,15 @@ func (q *Queries) GetClient(ctx context.Context, id int32) (Client, error) {
 		&i.Username,
 		&i.Firstname,
 		&i.Lastname,
+		&i.Email,
+		&i.Bio,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getClients = `-- name: GetClients :many
-SELECT id, username, firstname, lastname, created_at
+SELECT id, username, firstname, lastname, email, bio, created_at
 FROM clients
 `
 
@@ -509,6 +515,8 @@ func (q *Queries) GetClients(ctx context.Context) ([]Client, error) {
 			&i.Username,
 			&i.Firstname,
 			&i.Lastname,
+			&i.Email,
+			&i.Bio,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -522,7 +530,7 @@ func (q *Queries) GetClients(ctx context.Context) ([]Client, error) {
 }
 
 const getDeveloper = `-- name: GetDeveloper :one
-SELECT id, username, firstname, lastname, role, created_at
+SELECT id, username, firstname, lastname, role, email, bio, created_at
 FROM developers
 WHERE id = $1
 `
@@ -536,13 +544,15 @@ func (q *Queries) GetDeveloper(ctx context.Context, id int32) (Developer, error)
 		&i.Firstname,
 		&i.Lastname,
 		&i.Role,
+		&i.Email,
+		&i.Bio,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getDevelopers = `-- name: GetDevelopers :many
-SELECT id, username, firstname, lastname, role, created_at
+SELECT id, username, firstname, lastname, role, email, bio, created_at
 FROM developers
 `
 
@@ -561,6 +571,8 @@ func (q *Queries) GetDevelopers(ctx context.Context) ([]Developer, error) {
 			&i.Firstname,
 			&i.Lastname,
 			&i.Role,
+			&i.Email,
+			&i.Bio,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -638,7 +650,7 @@ SET
     firstname = $3,
     lastname = $4
 WHERE id = $1
-RETURNING id, username, firstname, lastname, created_at
+RETURNING id, username, firstname, lastname, email, bio, created_at
 `
 
 type UpdateClientParams struct {
@@ -661,6 +673,8 @@ func (q *Queries) UpdateClient(ctx context.Context, arg UpdateClientParams) (Cli
 		&i.Username,
 		&i.Firstname,
 		&i.Lastname,
+		&i.Email,
+		&i.Bio,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -713,7 +727,7 @@ SET
     lastname = $4,
     role = $5
 WHERE id = $1
-RETURNING id, username, firstname, lastname, role, created_at
+RETURNING id, username, firstname, lastname, role, email, bio, created_at
 `
 
 type UpdateDeveloperParams struct {
@@ -739,6 +753,8 @@ func (q *Queries) UpdateDeveloper(ctx context.Context, arg UpdateDeveloperParams
 		&i.Firstname,
 		&i.Lastname,
 		&i.Role,
+		&i.Email,
+		&i.Bio,
 		&i.CreatedAt,
 	)
 	return i, err

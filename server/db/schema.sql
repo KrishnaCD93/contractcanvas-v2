@@ -5,6 +5,8 @@ CREATE TABLE "clients"
     "username" varchar,
     "firstname" varchar,
     "lastname" varchar,
+    "email" varchar,
+    "bio" text,
     "created_at" timestamp default current_timestamp
 );
 
@@ -15,6 +17,8 @@ CREATE TABLE "developers"
     "firstname" varchar,
     "lastname" varchar,
     "role" varchar,
+    "email" varchar,
+    "bio" text,
     "created_at" timestamp default current_timestamp
 );
 
