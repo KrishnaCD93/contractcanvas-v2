@@ -22,7 +22,7 @@ type Deliverable struct {
 	ID          int32
 	ProjectID   pgtype.Int4
 	Description pgtype.Text
-	Type        interface{}
+	Type        pgtype.Text
 	Budget      pgtype.Float8
 	CreatedAt   pgtype.Timestamp
 }

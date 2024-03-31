@@ -5,7 +5,7 @@ import (
 	"log"
 	"reflect"
 
-	contractcanvas "github.com/KrishnaCD93/contractcanvas-v2"
+	"github.com/KrishnaCD93/contractcanvas-v2/db"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -32,25 +32,27 @@ func newTemplate() *Templates {
 	}
 }
 
-func runDBTest() error {
+func runDBTest() ([]*string, error) {
 	ctx := context.Background()
 
 	conn, err := pgx.Connect(ctx, "user=postgres password=postgres dbname=postgres sslmode=verify-full")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer conn.Close(ctx)
 
-	queries := contractcanvas.New(conn)
+	queries := db.New(conn)
 
 	// get all developers
 	developers, err := queries.GetDevelopers(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	log.Println(developers)
+
 	// insert a developer
-	insertDeveloper, err := queries.CreateDeveloper(ctx, contractcanvas.CreateDeveloperParams{
+	insertDeveloper, err := queries.CreateDeveloper(ctx, db.CreateDeveloperParams{
 		Username:  "Krishna",
 		Firstname: "Krishna",
 		Lastname:  "Duvvuri",
@@ -61,18 +63,18 @@ func runDBTest() error {
 		},
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// get a developer
 	developer, err := queries.GetDeveloper(ctx, insertDeveloper.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Println(reflect.DeepEqual(developer, insertDeveloper))
 
-	log.Println(developers)
+	return developer, nil
 }
 
 func main() {
@@ -86,10 +88,15 @@ func main() {
 
 	e.Renderer = newTemplate()
 
+	developers, err := runDBTest()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Routes
 	e.GET("/", func(c echo.Context) error {
-		count := Count{Count: 0}
-		return c.Render(http.StatusOK, "index.html", count)
+		developer := developers[0]
+		return c.Render(http.StatusOK, "index.html", developer)
 	})
 
 	e.GET("/api/hello", func(c echo.Context) error {

@@ -29,7 +29,7 @@ WHERE
 type BurnedValueRow struct {
 	Projectid       pgtype.Int4
 	Deliverable     pgtype.Text
-	Type            interface{}
+	Type            pgtype.Text
 	Reportingperiod string
 	Burnedvalue     int64
 }
@@ -100,7 +100,7 @@ FROM
 type CostPerformanceIndexRow struct {
 	Projectid       pgtype.Int4
 	Deliverable     pgtype.Text
-	Type            interface{}
+	Type            pgtype.Text
 	Reportingperiod string
 	Earnedvalue     int32
 	Burnedvalue     int64
@@ -175,7 +175,7 @@ RETURNING id, project_id, description, type, budget, created_at
 type CreateDeliverableParams struct {
 	ProjectID   pgtype.Int4
 	Description pgtype.Text
-	Type        interface{}
+	Type        pgtype.Text
 	Budget      pgtype.Float8
 }
 
@@ -440,7 +440,7 @@ WHERE
 type EarnedValueRow struct {
 	Projectid       pgtype.Int4
 	Deliverable     pgtype.Text
-	Type            interface{}
+	Type            pgtype.Text
 	Percentcomplete pgtype.Float8
 	Budget          pgtype.Float8
 	Reportingperiod string
@@ -695,7 +695,7 @@ type UpdateDeliverableParams struct {
 	ID          int32
 	ProjectID   pgtype.Int4
 	Description pgtype.Text
-	Type        interface{}
+	Type        pgtype.Text
 	Budget      pgtype.Float8
 }
 

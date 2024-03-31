@@ -45,7 +45,7 @@ CREATE TABLE "deliverables"
     "id" SERIAL PRIMARY KEY,
     "project_id" integer,
     "description" text,
-    "type" nvarchar,
+    "type" varchar,
     "budget" float,
     "created_at" timestamp default current_timestamp
 );
