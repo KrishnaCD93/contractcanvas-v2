@@ -8,13 +8,35 @@
 
 <body>
     {{template "content" .}}
+    {{template "developer" .}}
 </body>
 
 </html>
 {{end}}
 
 {{define "content"}}
-<h1>htmx Example</h1>
-<button hx-get="/api/hello">Say Hello</button>
-<div id="hello"></div>
+<form hx-post="/v1/developer" hx-target="#result">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="text" name="firstname" placeholder="First Name" required>
+    <input type="text" name="lastname" placeholder="Last Name" required>
+    <input type="text" name="Role" placeholder="Role" required>
+    <textarea name="bio" placeholder="Bio" required></textarea>
+    <button type="submit">Submit</button>
+</form>
+
+<div id="result"></div>
+{{end}}
+
+{{define "developer"}}
+{{range .}}
+<div>
+    <h2>{{.Username}}</h2>
+    <p>{{.Email}}</p>
+    <p>{{.Firstname}}</p>
+    <p>{{.Lastname}}</p>
+    <p>{{.Role}}</p>
+    <p>{{.Bio}}</p>
+</div>
+{{end}}
 {{end}}

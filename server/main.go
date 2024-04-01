@@ -1,21 +1,18 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
 	"log"
-	"reflect"
-
-	"github.com/KrishnaCD93/contractcanvas-v2/db"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"html/template"
 	"io"
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/KrishnaCD93/contractcanvas-v2/db"
 )
 
 type Templates struct {
@@ -32,49 +29,55 @@ func newTemplate() *Templates {
 	}
 }
 
-func runDBTest() ([]*string, error) {
-	ctx := context.Background()
-
-	conn, err := pgx.Connect(ctx, "user=postgres password=postgres dbname=postgres sslmode=verify-full")
+func CreateDeveloper(c echo.Context, developer db.Developer) error {
+	developer, err := RunDBTest(developer)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	defer conn.Close(ctx)
+	return c.JSON(http.StatusOK, developer)
+}
 
-	queries := db.New(conn)
-
-	// get all developers
-	developers, err := queries.GetDevelopers(ctx)
+func CreateDeveloperHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
 	if err != nil {
-		return nil, err
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	log.Println(developers)
+	username := r.FormValue("username")
+	firstname := r.FormValue("firstname")
+	lastname := r.FormValue("lastname")
+	role := r.FormValue("role")
+	email := r.FormValue("email")
+	bio := r.FormValue("bio")
 
-	// insert a developer
-	insertDeveloper, err := queries.CreateDeveloper(ctx, db.CreateDeveloperParams{
-		Username:  "Krishna",
-		Firstname: "Krishna",
-		Lastname:  "Duvvuri",
-		Role:      "Software Engineer",
-		Email:     "krishna.c.duvvuri",
-		Bio: pgtype.Text{
-			String: "I am a software engineer and I want to build cool things!",
+	developer := db.Developer{
+		Username: pgtype.Text(username),
+		Firstname: pgtype.Text{
+			String: firstname,
+			Status: pgtype.Present,
 		},
-	})
-	if err != nil {
-		return nil, err
+		Lastname: pgtype.Text{
+			String: lastname,
+			Status: pgtype.Present,
+		},
+		Role: pgtype.Text{
+			String: role,
+			Status: pgtype.Present,
+		},
+		Email: pgtype.Text{
+			String: email,
+			Status: pgtype.Present,
+		},
+		Bio: pgtype.Text{
+			String: bio,
+			Status: pgtype.Present,
+		},
 	}
 
-	// get a developer
-	developer, err := queries.GetDeveloper(ctx, insertDeveloper.ID)
-	if err != nil {
-		return nil, err
-	}
+	insertedDeveloper, err := RunDBTest(developer)
 
-	log.Println(reflect.DeepEqual(developer, insertDeveloper))
-
-	return developer, nil
+	json.NewEncoder(w).Encode(insertedDeveloper)
 }
 
 func main() {
@@ -88,20 +91,20 @@ func main() {
 
 	e.Renderer = newTemplate()
 
-	developers, err := runDBTest()
+	developer, err := RunDBTest()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Routes
 	e.GET("/", func(c echo.Context) error {
-		developer := developers[0]
 		return c.Render(http.StatusOK, "index.html", developer)
 	})
 
 	e.GET("/api/hello", func(c echo.Context) error {
 		return c.HTML(http.StatusOK, "<h2>Hello, World!<h2>")
 	})
+
 	// Start server
 	e.Logger.Fatal(e.Start(":8080"))
 }

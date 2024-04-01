@@ -106,16 +106,16 @@ FROM
 
 -- name: CreateClient :one
 INSERT INTO clients
-    (username, firstname, lastname)
+    (username, firstname, lastname, email, bio)
 VALUES
-    ($1, $2, $3)
+    ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: CreateDeveloper :one
 INSERT INTO developers
-    (username, firstname, lastname, role)
+    (username, firstname, lastname, role, email, bio)
 VALUES
-    ($1, $2, $3, $4)
+    ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: CreateWorkingRelationship :one
@@ -186,7 +186,9 @@ UPDATE clients
 SET
     username = $2,
     firstname = $3,
-    lastname = $4
+    lastname = $4,
+    email = $5,
+    bio = $6
 WHERE id = $1
 RETURNING *;
 
@@ -196,7 +198,9 @@ SET
     username = $2,
     firstname = $3,
     lastname = $4,
-    role = $5
+    role = $5,
+    email = $6,
+    bio = $7
 WHERE id = $1
 RETURNING *;
 

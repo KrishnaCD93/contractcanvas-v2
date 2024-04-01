@@ -137,9 +137,9 @@ func (q *Queries) CostPerformanceIndex(ctx context.Context, projectID pgtype.Int
 
 const createClient = `-- name: CreateClient :one
 INSERT INTO clients
-    (username, firstname, lastname)
+    (username, firstname, lastname, email, bio)
 VALUES
-    ($1, $2, $3)
+    ($1, $2, $3, $4, $5)
 RETURNING id, username, firstname, lastname, email, bio, created_at
 `
 
@@ -147,10 +147,18 @@ type CreateClientParams struct {
 	Username  pgtype.Text
 	Firstname pgtype.Text
 	Lastname  pgtype.Text
+	Email     pgtype.Text
+	Bio       pgtype.Text
 }
 
 func (q *Queries) CreateClient(ctx context.Context, arg CreateClientParams) (Client, error) {
-	row := q.db.QueryRow(ctx, createClient, arg.Username, arg.Firstname, arg.Lastname)
+	row := q.db.QueryRow(ctx, createClient,
+		arg.Username,
+		arg.Firstname,
+		arg.Lastname,
+		arg.Email,
+		arg.Bio,
+	)
 	var i Client
 	err := row.Scan(
 		&i.ID,
@@ -200,9 +208,9 @@ func (q *Queries) CreateDeliverable(ctx context.Context, arg CreateDeliverablePa
 
 const createDeveloper = `-- name: CreateDeveloper :one
 INSERT INTO developers
-    (username, firstname, lastname, role)
+    (username, firstname, lastname, role, email, bio)
 VALUES
-    ($1, $2, $3, $4)
+    ($1, $2, $3, $4, $5, $6)
 RETURNING id, username, firstname, lastname, role, email, bio, created_at
 `
 
@@ -211,6 +219,8 @@ type CreateDeveloperParams struct {
 	Firstname pgtype.Text
 	Lastname  pgtype.Text
 	Role      pgtype.Text
+	Email     pgtype.Text
+	Bio       pgtype.Text
 }
 
 func (q *Queries) CreateDeveloper(ctx context.Context, arg CreateDeveloperParams) (Developer, error) {
@@ -219,6 +229,8 @@ func (q *Queries) CreateDeveloper(ctx context.Context, arg CreateDeveloperParams
 		arg.Firstname,
 		arg.Lastname,
 		arg.Role,
+		arg.Email,
+		arg.Bio,
 	)
 	var i Developer
 	err := row.Scan(
@@ -648,7 +660,9 @@ UPDATE clients
 SET
     username = $2,
     firstname = $3,
-    lastname = $4
+    lastname = $4,
+    email = $5,
+    bio = $6
 WHERE id = $1
 RETURNING id, username, firstname, lastname, email, bio, created_at
 `
@@ -658,6 +672,8 @@ type UpdateClientParams struct {
 	Username  pgtype.Text
 	Firstname pgtype.Text
 	Lastname  pgtype.Text
+	Email     pgtype.Text
+	Bio       pgtype.Text
 }
 
 func (q *Queries) UpdateClient(ctx context.Context, arg UpdateClientParams) (Client, error) {
@@ -666,6 +682,8 @@ func (q *Queries) UpdateClient(ctx context.Context, arg UpdateClientParams) (Cli
 		arg.Username,
 		arg.Firstname,
 		arg.Lastname,
+		arg.Email,
+		arg.Bio,
 	)
 	var i Client
 	err := row.Scan(
@@ -725,7 +743,9 @@ SET
     username = $2,
     firstname = $3,
     lastname = $4,
-    role = $5
+    role = $5,
+    email = $6,
+    bio = $7
 WHERE id = $1
 RETURNING id, username, firstname, lastname, role, email, bio, created_at
 `
@@ -736,6 +756,8 @@ type UpdateDeveloperParams struct {
 	Firstname pgtype.Text
 	Lastname  pgtype.Text
 	Role      pgtype.Text
+	Email     pgtype.Text
+	Bio       pgtype.Text
 }
 
 func (q *Queries) UpdateDeveloper(ctx context.Context, arg UpdateDeveloperParams) (Developer, error) {
@@ -745,6 +767,8 @@ func (q *Queries) UpdateDeveloper(ctx context.Context, arg UpdateDeveloperParams
 		arg.Firstname,
 		arg.Lastname,
 		arg.Role,
+		arg.Email,
+		arg.Bio,
 	)
 	var i Developer
 	err := row.Scan(
