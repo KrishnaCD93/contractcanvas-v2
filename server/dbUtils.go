@@ -3,7 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"reflect"
+
+	"github.com/joho/godotenv"
 
 	"github.com/KrishnaCD93/contractcanvas-v2/db"
 
@@ -21,8 +24,12 @@ func RunDBTest(devInfo db.Developer) (db.Developer, error) {
 		Bio       pgtype.Text `json:"bio"`
 	}
 	ctx := context.Background()
-
-	conn, err := pgx.Connect(ctx, "user=postgres password=admin dbname=contractcanvas sslmode=verify-full")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	postgresURL := os.Getenv("POSTGRES_URL")
+	conn, err := pgx.Connect(ctx, postgresURL)
 	if err != nil {
 		return db.Developer{}, err
 	}
