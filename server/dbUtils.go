@@ -37,13 +37,12 @@ func RunDBTest(devInfo db.Developer) (db.Developer, error) {
 
 	queries := db.New(conn)
 
-	// get all developers
-	developers, err := queries.GetDevelopers(ctx)
-	if err != nil {
-		return db.Developer{}, err
-	}
-
-	log.Println(developers)
+	log.Println("Username: ", devInfo.Username)
+	log.Println("Firstname: ", devInfo.Firstname)
+	log.Println("Lastname: ", devInfo.Lastname)
+	log.Println("Role: ", devInfo.Role)
+	log.Println("Email: ", devInfo.Email)
+	log.Println("Bio: ", devInfo.Bio)
 
 	// insert a developer
 	insertedDeveloper, err := queries.CreateDeveloper(ctx, db.CreateDeveloperParams{
