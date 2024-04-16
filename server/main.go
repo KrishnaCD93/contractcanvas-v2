@@ -1,22 +1,33 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"log"
+	"os"
+
+	"github.com/joho/godotenv"
+
+	"github.com/KrishnaCD93/contractcanvas-v2/db"
 
 	"html/template"
 	"io"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
-	"github.com/KrishnaCD93/contractcanvas-v2/db"
 )
 
 type Templates struct {
 	templates *template.Template
+}
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 }
 
 func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
@@ -29,64 +40,38 @@ func newTemplate() *Templates {
 	}
 }
 
-func CreateDeveloper(c echo.Context, developer db.Developer) error {
-	log.Println("CreateDeveloper")
+func GetDevelopers(conn *pgx.Conn, ctx context.Context) ([]db.Developer, error) {
+	queries := db.New(conn)
 
-	return c.JSON(http.StatusOK, developer)
+	developers, err := queries.GetDevelopers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return developers, nil
 }
 
-func CreateDeveloperHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+func InsertDeveloper(devInfo db.Developer, conn *pgx.Conn, ctx context.Context) (db.Developer, error) {
+
+	queries := db.New(conn)
+
+	insertedDeveloper, err := queries.CreateDeveloper(ctx, db.CreateDeveloperParams{
+		Username:  devInfo.Username,
+		Firstname: devInfo.Firstname,
+		Lastname:  devInfo.Lastname,
+		Role:      devInfo.Role,
+		Email:     devInfo.Email,
+		Bio:       devInfo.Bio,
+	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return db.Developer{}, err
 	}
 
-	username := r.FormValue("username")
-	firstname := r.FormValue("firstname")
-	lastname := r.FormValue("lastname")
-	role := r.FormValue("role")
-	email := r.FormValue("email")
-	bio := r.FormValue("bio")
-
-	developer := db.Developer{
-		Username: pgtype.Text{
-			String: username,
-			Valid:  true,
-		},
-		Firstname: pgtype.Text{
-			String: firstname,
-			Valid:  true,
-		},
-		Lastname: pgtype.Text{
-			String: lastname,
-			Valid:  true,
-		},
-		Role: pgtype.Text{
-			String: role,
-			Valid:  true,
-		},
-		Email: pgtype.Text{
-			String: email,
-			Valid:  true,
-		},
-		Bio: pgtype.Text{
-			String: bio,
-			Valid:  true,
-		},
-	}
-
-	insertedDeveloper, err := RunDBTest(developer)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	log.Println(insertedDeveloper)
-	json.NewEncoder(w).Encode(insertedDeveloper)
+	return insertedDeveloper, nil
 }
 
 func main() {
+
 	// Echo instance
 	e := echo.New()
 
@@ -102,16 +87,24 @@ func main() {
 		return c.Render(http.StatusOK, "index.html", nil)
 	})
 
-	// e.GET("/developers", func(c echo.Context) error {
-	// 	developers, err := GetDevelopers()
-	// 	if err != nil {
-	// 		return c.JSON(http.StatusInternalServerError, err.Error())
-	// 	}
+	ctx := context.Background()
+	postgresURL := os.Getenv("POSTGRES_URL")
+	conn, err := pgx.Connect(ctx, postgresURL)
+	if err != nil {
+		log.Fatalf("Unable to connect to database: %v\n", err)
+	}
+	defer conn.Close(ctx)
 
-	// 	return c.JSON(http.StatusOK, developers)
-	// })
+	e.GET("/api/developers", func(c echo.Context) error {
+		developers, err := GetDevelopers(conn, ctx)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
 
-	e.POST("/createDeveloper", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, developers)
+	})
+
+	e.POST("/api/createDeveloper", func(c echo.Context) error {
 		// Parse the form data from the request
 		err := c.Request().ParseForm()
 		if err != nil {
@@ -138,7 +131,7 @@ func main() {
 		}
 
 		// Insert the developer into the database
-		insertedDeveloper, err := RunDBTest(developer)
+		insertedDeveloper, err := InsertDeveloper(developer, conn, ctx)
 		if err != nil {
 			log.Printf("Error inserting developer: %v", err)
 			return c.JSON(http.StatusInternalServerError, err.Error())

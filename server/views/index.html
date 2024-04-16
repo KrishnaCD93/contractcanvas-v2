@@ -15,12 +15,12 @@
 {{end}}
 
 {{define "content"}}
-<form hx-post="/createDeveloper" hx-target="#result">
+<form hx-post="/api/createDeveloper" hx-target="#result">
     <input type="email" name="email" placeholder="Email" required>
     <input type="text" name="username" placeholder="Username" required>
     <input type="text" name="firstname" placeholder="First Name" required>
     <input type="text" name="lastname" placeholder="Last Name" required>
-    <input type="text" name="Role" placeholder="Role" required>
+    <input type="text" name="role" placeholder="Role" required>
     <textarea name="bio" placeholder="Bio" required></textarea>
     <button type="submit">Submit</button>
 </form>
